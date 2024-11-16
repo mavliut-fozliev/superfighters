@@ -1,3 +1,4 @@
+import { getData, initializeDB } from "./database.js";
 import { drawBlueRect, drawRedRect, drawGreenRect, moveRectangle } from "./rectangle.js";
 
 const keys = {};
@@ -24,7 +25,6 @@ function addResizeEventListener(canvas, ctx) {
 function addKeyboardEventListeners() {
   window.addEventListener("keydown", (event) => {
     keys[event.key] = true;
-    console.log(event.key);
   });
 
   window.addEventListener("keyup", (event) => {
@@ -38,7 +38,11 @@ function animate(canvas, ctx) {
 }
 
 function main() {
-  console.log("Game Start!");
+  console.log("Game Started!");
+  initializeDB();
+
+  const data = getData();
+  console.log(data);
 
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");

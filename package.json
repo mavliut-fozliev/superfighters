@@ -1,3 +1,10 @@
 {
-  "name": "superfighters"
+  "name": "superfighters",
+  "scripts": {
+    "build": "npx esbuild scripts/index.js --bundle --outfile=public/bundle.js --sourcemap --watch"
+  },
+  "dependencies": {
+    "@spica-devkit/bucket": "^0.9.29",
+    "esbuild": "^0.24.0"
+  }
 }
