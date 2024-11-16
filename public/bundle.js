@@ -3779,57 +3779,57 @@
   }
   var data;
   (function(data2) {
-    function get(bucketId, documentId, options = {}) {
+    function get(bucketId2, documentId, options = {}) {
       internal_common.checkInitialized(authorization);
-      return service.get(`bucket/${bucketId}/data/${documentId}`, {
+      return service.get(`bucket/${bucketId2}/data/${documentId}`, {
         params: options.queryParams,
         headers: options.headers
       });
     }
     data2.get = get;
-    function getAll(bucketId, options = {}) {
+    function getAll(bucketId2, options = {}) {
       internal_common.checkInitialized(authorization);
-      return service.get(`bucket/${bucketId}/data`, {
+      return service.get(`bucket/${bucketId2}/data`, {
         params: options.queryParams,
         headers: options.headers
       });
     }
     data2.getAll = getAll;
-    function insert(bucketId, document2) {
+    function insert(bucketId2, document2) {
       internal_common.checkInitialized(authorization);
-      return service.post(`bucket/${bucketId}/data`, document2);
+      return service.post(`bucket/${bucketId2}/data`, document2);
     }
     data2.insert = insert;
-    function update(bucketId, documentId, document2) {
+    function update(bucketId2, documentId, document2) {
       internal_common.checkInitialized(authorization);
-      return service.put(`bucket/${bucketId}/data/${documentId}`, document2);
+      return service.put(`bucket/${bucketId2}/data/${documentId}`, document2);
     }
     data2.update = update;
-    function patch(bucketId, documentId, document2) {
+    function patch(bucketId2, documentId, document2) {
       internal_common.checkInitialized(authorization);
-      return service.patch(`bucket/${bucketId}/data/${documentId}`, document2);
+      return service.patch(`bucket/${bucketId2}/data/${documentId}`, document2);
     }
     data2.patch = patch;
-    function remove(bucketId, documentId) {
+    function remove(bucketId2, documentId) {
       internal_common.checkInitialized(authorization);
-      return service.delete(`bucket/${bucketId}/data/${documentId}`);
+      return service.delete(`bucket/${bucketId2}/data/${documentId}`);
     }
     data2.remove = remove;
     let realtime2;
     (function(realtime3) {
-      function get2(bucketId, documentId, messageCallback) {
+      function get2(bucketId2, documentId, messageCallback) {
         internal_common.checkInitialized(authorization);
-        const fullUrl = internal_common.buildUrl(`${wsUrl}/${bucketId}/data`, {
+        const fullUrl = internal_common.buildUrl(`${wsUrl}/${bucketId2}/data`, {
           filter: `document._id=="${documentId}"`,
           Authorization: authorization
         });
         return getWsObs(fullUrl.toString(), void 0, documentId, messageCallback);
       }
       realtime3.get = get2;
-      function getAll2(bucketId, queryParams = {}, messageCallback) {
+      function getAll2(bucketId2, queryParams = {}, messageCallback) {
         internal_common.checkInitialized(authorization);
         const sort = queryParams["sort"];
-        const fullUrl = internal_common.buildUrl(`${wsUrl}/${bucketId}/data`, {
+        const fullUrl = internal_common.buildUrl(`${wsUrl}/${bucketId2}/data`, {
           ...queryParams,
           Authorization: authorization
         });
@@ -3839,26 +3839,18 @@
     })(realtime2 = data2.realtime || (data2.realtime = {}));
   })(data || (data = {}));
 
-  // scripts/database.js
-  var apikey = "465e18lyoj8x26";
-  var publicUrl = "https://mava-test-79ed5.hq.spicaengine.com/api";
-  function initializeDB() {
-    initialize({ apikey, publicUrl });
-  }
-  function getData(req, res) {
-    initialize({ apikey, publicUrl });
-    return data.realtime.getAll("6696887f13d82e002ccb8aa6");
-  }
-
   // scripts/rectangle.js
   var coordinates = {
-    blueRectX: 50,
-    blueRectY: 50,
-    redRectX: 900,
-    redRectY: 400,
-    greenRectX: 400,
-    greenRectY: 200
+    blueRectX: 0,
+    blueRectY: 0,
+    redRectX: 0,
+    redRectY: 0,
+    greenRectX: 0,
+    greenRectY: 0
   };
+  function updateCoordinates(coordinate, value) {
+    coordinates[coordinate] = value;
+  }
   var coordinateNames = {
     blueRectX: "blueRectX",
     blueRectY: "blueRectY",
@@ -3867,46 +3859,60 @@
     greenRectX: "greenRectX",
     greenRectY: "greenRectY"
   };
+  var coordinateIds = {
+    blueRectX: "67387e8ec897d0002c0f69b8",
+    blueRectY: "67387e97c897d0002c0f69bd",
+    redRectX: "67387ea2c897d0002c0f69c2",
+    redRectY: "67387eaac897d0002c0f69c7",
+    greenRectX: "67387eb2c897d0002c0f69cc",
+    greenRectY: "67387ebdc897d0002c0f69d1"
+  };
   var blueRectSpeed = 6;
   var redRectSpeed = 5;
   var greenRectSpeed = 4;
   var rectWidth = 200;
   var rectHeight = 100;
-  function addRectXY(coordinate, value) {
-    coordinates[coordinate] += value;
+  function addRectXY(coordinate, value, connection2) {
+    const newValue = coordinates[coordinate] + value;
+    const document2 = {
+      _id: coordinateIds[coordinate],
+      value: newValue
+    };
+    console.log("coordinates[coordinate]: ", coordinates[coordinate]);
+    console.log("newValue: ", newValue);
+    if (coordinates[coordinate] !== newValue) connection2.patch(document2);
   }
-  function setRectXY(coordinate, value) {
-    coordinates[coordinate] = value;
+  function setRectXY(coordinate, value, connection2) {
+    const document2 = {
+      _id: coordinateIds[coordinate],
+      value
+    };
+    console.log(value);
+    if (coordinates[coordinate] !== value) connection2.patch(document2);
   }
   function preventOutOfBounds(rectX, rectY) {
-    if (rectX < 0) rectX = 0;
-    if (rectY < 0) rectY = 0;
-    if (rectX + rectWidth > window.innerWidth) rectX = window.innerWidth - rectWidth;
-    if (rectY + rectHeight > window.innerHeight) rectY = window.innerHeight - rectHeight;
+    if (rectX < 0) setRectXY(rectX, 0, connection);
+    if (rectY < 0) setRectXY(rectY, 0, connection);
+    if (rectX + rectWidth > window.innerWidth) setRectXY(rectX, window.innerWidth - rectWidth, connection);
+    if (rectY + rectHeight > window.innerHeight) setRectXY(rectY, window.innerWidth - rectWidth, connection);
     return { rectX, rectY };
   }
-  function moveRectangle(keys2) {
-    if (keys2["ArrowRight"]) addRectXY(coordinateNames.blueRectX, blueRectSpeed);
-    if (keys2["ArrowLeft"]) addRectXY(coordinateNames.blueRectX, -blueRectSpeed);
-    if (keys2["ArrowUp"]) addRectXY(coordinateNames.blueRectY, -blueRectSpeed);
-    if (keys2["ArrowDown"]) addRectXY(coordinateNames.blueRectY, blueRectSpeed);
-    if (keys2["d"]) addRectXY(coordinateNames.redRectX, redRectSpeed);
-    if (keys2["a"]) addRectXY(coordinateNames.redRectX, -redRectSpeed);
-    if (keys2["w"]) addRectXY(coordinateNames.redRectY, -redRectSpeed);
-    if (keys2["s"]) addRectXY(coordinateNames.redRectY, redRectSpeed);
-    if (keys2["l"]) addRectXY(coordinateNames.greenRectX, greenRectSpeed);
-    if (keys2["j"]) addRectXY(coordinateNames.greenRectX, -greenRectSpeed);
-    if (keys2["i"]) addRectXY(coordinateNames.greenRectY, -greenRectSpeed);
-    if (keys2["k"]) addRectXY(coordinateNames.greenRectY, greenRectSpeed);
-    const blueRect = preventOutOfBounds(coordinates.blueRectX, coordinates.blueRectY);
-    setRectXY(coordinateNames.blueRectX, blueRect.rectX);
-    setRectXY(coordinateNames.blueRectY, blueRect.rectY);
-    const redRect = preventOutOfBounds(coordinates.redRectX, coordinates.redRectY);
-    setRectXY(coordinateNames.redRectX, redRect.rectX);
-    setRectXY(coordinateNames.redRectY, redRect.rectY);
-    const greenRect = preventOutOfBounds(coordinates.greenRectX, coordinates.greenRectY);
-    setRectXY(coordinateNames.greenRectX, greenRect.rectX);
-    setRectXY(coordinateNames.greenRectY, greenRect.rectY);
+  function moveRectangle(keys2, connection2) {
+    if (keys2["ArrowRight"]) addRectXY(coordinateNames.blueRectX, blueRectSpeed, connection2);
+    if (keys2["ArrowLeft"]) addRectXY(coordinateNames.blueRectX, -blueRectSpeed, connection2);
+    if (keys2["ArrowUp"]) addRectXY(coordinateNames.blueRectY, -blueRectSpeed, connection2);
+    if (keys2["ArrowDown"]) addRectXY(coordinateNames.blueRectY, blueRectSpeed, connection2);
+    if (keys2["d"]) addRectXY(coordinateNames.redRectX, redRectSpeed, connection2);
+    if (keys2["a"]) addRectXY(coordinateNames.redRectX, -redRectSpeed, connection2);
+    if (keys2["w"]) addRectXY(coordinateNames.redRectY, -redRectSpeed, connection2);
+    if (keys2["s"]) addRectXY(coordinateNames.redRectY, redRectSpeed, connection2);
+    if (keys2["l"]) addRectXY(coordinateNames.greenRectX, greenRectSpeed, connection2);
+    if (keys2["j"]) addRectXY(coordinateNames.greenRectX, -greenRectSpeed, connection2);
+    if (keys2["i"]) addRectXY(coordinateNames.greenRectY, -greenRectSpeed, connection2);
+    if (keys2["k"]) addRectXY(coordinateNames.greenRectY, greenRectSpeed, connection2);
+    preventOutOfBounds(coordinates.blueRectX, coordinates.blueRectY);
+    preventOutOfBounds(coordinates.redRectX, coordinates.redRectY);
+    preventOutOfBounds(coordinates.greenRectX, coordinates.greenRectY);
   }
   function drawBlueRect(ctx) {
     ctx.fillStyle = "blue";
@@ -3921,22 +3927,52 @@
     ctx.fillRect(coordinates.greenRectX, coordinates.greenRectY, rectWidth, rectHeight);
   }
 
+  // scripts/database.js
+  var apikey = "465e18lyoj8x26";
+  var publicUrl = "https://mava-test-79ed5.hq.spicaengine.com/api";
+  function initializeDB() {
+    initialize({ apikey, publicUrl });
+  }
+  var bucketId = "6696887f13d82e002ccb8aa6";
+  function listenForChanges(req, res) {
+    initializeDB();
+    const subscription = data.realtime.getAll(bucketId).subscribe(
+      (data2) => {
+        console.log("Data updated:", data2);
+        data2.forEach((item) => {
+          updateCoordinates(item.key, item.value);
+        });
+      },
+      (error) => {
+        console.error("Error with real-time subscription:", error);
+        res.status(500).send("Error establishing real-time updates.");
+      }
+    );
+    setTimeout(() => subscription.unsubscribe(), 6e5);
+  }
+  function updateBucket() {
+    initializeDB();
+    const connection2 = data.realtime.getAll(bucketId);
+    connection2.subscribe();
+    return connection2;
+  }
+
   // scripts/index.js
   var keys = {};
-  function draw(canvas, ctx) {
+  function draw(canvas, ctx, connection2) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBlueRect(ctx);
     drawRedRect(ctx);
     drawGreenRect(ctx);
-    moveRectangle(keys);
+    moveRectangle(keys, connection2);
   }
-  function resizeCanvas(canvas, ctx) {
+  function resizeCanvas(canvas, ctx, connection2) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    draw(canvas, ctx);
+    draw(canvas, ctx, connection2);
   }
-  function addResizeEventListener(canvas, ctx) {
-    window.addEventListener("resize", () => resizeCanvas(canvas, ctx));
+  function addResizeEventListener(canvas, ctx, connection2) {
+    window.addEventListener("resize", () => resizeCanvas(canvas, ctx, connection2));
   }
   function addKeyboardEventListeners() {
     window.addEventListener("keydown", (event) => {
@@ -3946,21 +3982,21 @@
       keys[event.key] = false;
     });
   }
-  function animate(canvas, ctx) {
-    draw(canvas, ctx);
-    requestAnimationFrame(() => animate(canvas, ctx));
+  function animate(canvas, ctx, connection2) {
+    draw(canvas, ctx, connection2);
+    requestAnimationFrame(() => animate(canvas, ctx, connection2));
   }
-  function main() {
+  async function main() {
     console.log("Game Started!");
     initializeDB();
-    const data2 = getData();
-    console.log(data2);
+    listenForChanges();
+    const connection2 = updateBucket();
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-    resizeCanvas(canvas, ctx);
-    addResizeEventListener(canvas, ctx);
+    resizeCanvas(canvas, ctx, connection2);
+    addResizeEventListener(canvas, ctx, connection2);
     addKeyboardEventListeners();
-    animate(canvas, ctx);
+    animate(canvas, ctx, connection2);
   }
   main();
 })();

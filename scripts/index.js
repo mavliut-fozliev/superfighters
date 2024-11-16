@@ -1,25 +1,25 @@
-import { getData, initializeDB } from "./database.js";
+import { initializeDB, listenForChanges, updateBucket } from "./database.js";
 import { drawBlueRect, drawRedRect, drawGreenRect, moveRectangle } from "./rectangle.js";
 
 const keys = {};
 
-function draw(canvas, ctx) {
+function draw(canvas, ctx, connection) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBlueRect(ctx);
   drawRedRect(ctx);
   drawGreenRect(ctx);
-  moveRectangle(keys);
+  moveRectangle(keys, connection);
 }
 
-function resizeCanvas(canvas, ctx) {
+function resizeCanvas(canvas, ctx, connection) {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  draw(canvas, ctx);
+  draw(canvas, ctx, connection);
 }
 
-function addResizeEventListener(canvas, ctx) {
-  window.addEventListener("resize", () => resizeCanvas(canvas, ctx));
+function addResizeEventListener(canvas, ctx, connection) {
+  window.addEventListener("resize", () => resizeCanvas(canvas, ctx, connection));
 }
 
 function addKeyboardEventListeners() {
@@ -32,26 +32,25 @@ function addKeyboardEventListeners() {
   });
 }
 
-function animate(canvas, ctx) {
-  draw(canvas, ctx);
-  requestAnimationFrame(() => animate(canvas, ctx));
+function animate(canvas, ctx, connection) {
+  draw(canvas, ctx, connection);
+  requestAnimationFrame(() => animate(canvas, ctx, connection));
 }
 
-function main() {
+async function main() {
   console.log("Game Started!");
   initializeDB();
-
-  const data = getData();
-  console.log(data);
+  listenForChanges();
+  const connection = updateBucket();
 
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
 
-  resizeCanvas(canvas, ctx);
-  addResizeEventListener(canvas, ctx);
+  resizeCanvas(canvas, ctx, connection);
+  addResizeEventListener(canvas, ctx, connection);
   addKeyboardEventListeners();
 
-  animate(canvas, ctx);
+  animate(canvas, ctx, connection);
 }
 
 main();
